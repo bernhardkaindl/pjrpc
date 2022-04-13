@@ -7,7 +7,7 @@ test:
 	pipenv run py.test
 
 coverage:
-	pipenv run py.test --verbose --cov-report term --cov=pjrpc tests
+	pipenv run py.test --verbose --cov-report term --cov=xjsonrpc tests
 
 publish:
 	pip install twine
