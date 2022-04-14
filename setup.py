@@ -64,7 +64,7 @@ setup(
     tests_require=test_requirements,
     extras_require={
         'aiohttp': ['aiohttp~=3.0'],
-        'aio-pika': ['aio-pika~=6.0'],
+        'aio-pika': ['aio-pika~=7.0'],
         'flask': ['flask~=1.0'],
         'jsonschema': ['jsonschema~=3.0'],
         'kombu': ['kombu~=5.0'],
