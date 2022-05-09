@@ -1,6 +1,14 @@
 Changelog
 =========
 
+1.4.3 (2022-05-09)
+------------------
+
+- move message.ack() in aio_pika.Server to ack the RPC message before
+  attempting to process the message (workaround for servers not able
+  to process certain requests, maybe a nicer generic soultion can be
+  found or it can be made configurable when starting the server)
+
 1.4.2 (2022-04-14)
 ------------------
 

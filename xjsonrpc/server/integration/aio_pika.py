@@ -67,12 +67,27 @@ class Executor:
 
     async def _rpc_handle(self, message: aio_pika.IncomingMessage) -> None:
         """
-        Handles JSON-RPC request.
+        Handles JSON-RPC request, passed as handler to aio_pika.Queue.consume()
 
         :param message: incoming message
         """
 
         try:
+            await message.ack()  # Acknowledge message early to avoid repeats
+            # This means, when the server dies, without answering with any
+            # kind of message, the RPC Request is not re-issued to the server
+            # when it is restarted. In this case, the an RPC client will still
+            # wait for an RPC response. This means in this clase, the client
+            # has to be stopped manually and restarted to resume operation.
+            # This avoids having to remove having to purge RPC request messages
+            # which choke the server.
+            #
+            # A probably nicer way to handle this is likely to the store the
+            # in-flight RPC requests in another storage, shared memory or queue
+            # and if the server comes up after having had trouble, it reads
+            # this queue first, and responds to those RPC calls which could
+            # not be processed with an error response (to unblock any client
+            # waiting for a response on them).
             reply_to = message.reply_to
             response_text = await self._dispatcher.dispatch(message.body, context=message)
 
@@ -90,8 +105,6 @@ class Executor:
                             ),
                             routing_key=reply_to,
                         )
-
-            await message.ack()
 
         except Exception as e:
             logger.exception("jsonrpc request handling error: %s", e)
