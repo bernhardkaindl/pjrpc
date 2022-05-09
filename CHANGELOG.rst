@@ -9,6 +9,8 @@ Changelog
   to process certain requests, maybe a nicer generic soultion can be
   found or it can be made configurable when starting the server)
 - Fix exception handling in the example exception logger middleware
+- dispatcher.py: Fix mypy warnings annotations for MethodRegistry.add
+- package py.typed: mypy stops warning about missing typing infos
 - Major update of the aio_pika example server code
 
 1.4.2 (2022-04-14)

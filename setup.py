@@ -68,6 +68,9 @@ setup(
     ],
     python_requires=">=3.6",
     packages=find_packages(),
+    # Include additional files into the package
+    package_data={"xjsonrpc": ["py.typed"]},
+    include_package_data=True,
     install_requires=requirements,
     tests_require=test_requirements,
     extras_require={
