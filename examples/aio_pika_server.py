@@ -1,41 +1,44 @@
+#!/usr/bin/env python
+# Start a rabbitmq container: cd examples/pika; docker-compose up
+#
+# Then, add the vhost v1 and give the user guest permssion to use it:
+# docker_exec="docker exec -it rmq_rabbit_1"
+# $docker_exec rabbitmqctl add_vhost v1
+# $docker_exec rabbitmqctl set_permissions -p v1 guest ".*" ".*" ".*"
+#
+# - Then start the server and the client
+# - To delete the jsonrpc queue to force the server to recreate it, use:
+# docker exec -it rmq_rabbit_1 rabbitmqadmin delete queue name jsonrpc
 import asyncio
-import logging
-import uuid
-
-import aio_pika
-
 import xjsonrpc
+from logging import Logger, getLogger, basicConfig, INFO
 from xjsonrpc.server.integration import aio_pika as integration
 
-methods = xjsonrpc.server.MethodRegistry()
 
+def example_methods(logger: Logger) -> xjsonrpc.server.MethodRegistry:
+    methods = xjsonrpc.server.MethodRegistry()
 
-@methods.add
-def sum(a, b):
-    """RPC method implementing examples/aio_pika_client.py's calls to sum(1, 2) -> 3"""
-    return a + b
+    @methods.add
+    def sum(a, b):
+        """RPC method implementing calls to sum(1, 2) -> 3"""
+        from time import sleep
+        return a + b
 
+    @methods.add
+    def tick():
+        """RPC method implementing notification 'tick'"""
+        logger.info("examples/aio_pika_server.py: received tick")
 
-@methods.add
-def tick():
-    """RPC method implementing examples/aio_pika_client.py's notification 'tick'"""
-    print("examples/aio_pika_server.py: received tick")
+    return methods
 
-
-@methods.add(context='message')
-def add_user(message: aio_pika.IncomingMessage, user: dict):
-    user_id = uuid.uuid4().hex
-
-    return {'id': user_id, **user}
-
-
-executor = integration.Executor('amqp://guest:guest@localhost:5672/v1', queue_name='jsonrpc')
-executor.dispatcher.add_methods(methods)
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    basicConfig(level=INFO)
+    executor = integration.Executor(
+        'amqp://guest:guest@localhost:5672/v1', queue_name='jsonrpc'
+    )
+    executor.dispatcher.add_methods(example_methods(getLogger()))
     loop = asyncio.get_event_loop()
-
     loop.run_until_complete(executor.start())
     try:
         loop.run_forever()

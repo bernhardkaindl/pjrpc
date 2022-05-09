@@ -11,8 +11,8 @@
 # docker exec -it rmq_rabbit_1 rabbitmqadmin delete queue name jsonrpc
 #
 import asyncio
-from pjrpc.client.backend import aio_pika as pjrpc_client
-from pprint_log import pplog
+from xjsonrpc.client.backend import aio_pika as xjsonrpc_client
+from pformat_logger import pplog
 from logging import basicConfig, INFO
 from rich.logging import RichHandler
 from rich.traceback import install
@@ -28,7 +28,7 @@ def setup_rich_logging() -> None:
 
 async def main() -> None:
     setup_rich_logging()
-    client = pjrpc_client.Client(
+    client = xjsonrpc_client.Client(
         broker_url="amqp://guest:guest@localhost:5672/v1", queue_name="jsonrpc"
     )
     await client.connect()
